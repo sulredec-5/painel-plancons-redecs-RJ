@@ -227,6 +227,15 @@
   .popup-riscos{color:#5B6B82;font-size:12px;line-height:1.5;}
   .popup-obs{margin-top:7px;padding:6px 8px;background:#FBEEDF;border-left:3px solid #B5650A;color:#7A4200;font-size:11px;line-height:1.4;border-radius:0 3px 3px 0;}
 
+  /* BLOCO DE QUALIDADE TÉCNICA NO POPUP */
+  .popup-quality-box{margin-top:8px;padding-top:7px;border-top:1px dashed var(--line);font-size:11.5px;}
+  .popup-quality-title{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px;letter-spacing:.04em;}
+  .popup-quality-badges{display:flex;gap:6px;flex-wrap:wrap;}
+  .popup-qbadge{font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;}
+  .popup-qbadge.ok{background:var(--green-bg);color:var(--green);}
+  .popup-qbadge.warn{background:var(--amber-bg);color:var(--amber);}
+  .popup-qbadge.bad{background:var(--red-bg);color:var(--red);}
+
   .map-legend{background:white;border:1px solid var(--line);border-radius:5px;padding:8px 10px;font-family:"IBM Plex Sans",sans-serif;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,.08);}
   .map-legend-title{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#5B6B82;margin-bottom:5px;font-weight:600;}
   .map-legend-item{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
@@ -400,11 +409,8 @@
     .pill{white-space:nowrap;flex-shrink:0;}
   }
 
-  /* ==========================================================================
-     NOVA REGRA: CELULAR EM MODO PAISAGEM / HORIZONTAL (TELA GIRADA)
-     ========================================================================== */
+  /* CELULAR EM MODO PAISAGEM / HORIZONTAL (TELA GIRADA) */
   @media (orientation: landscape) and (max-height: 550px) {
-    /* Todos os 5 cards na mesma linha horizontal, mais compactos e estreitos */
     .stats {
       display: grid !important;
       grid-template-columns: repeat(5, 1fr) !important;
@@ -439,7 +445,7 @@
     <div class="top-header-row">
       <div class="top-brand">
         <div class="top-logo-wrap">
-          <img class="top-logo" id="headerLogo" src="logo.png?v=21" alt="Logo SEDEC RJ" onerror="this.onerror=null;this.parentElement.innerHTML='<span style=\'font-size:26px;\'>🛡️</span>';">
+          <img class="top-logo" id="headerLogo" src="logo.png?v=22" alt="Logo SEDEC RJ" onerror="this.onerror=null;this.parentElement.innerHTML='<span style=\'font-size:26px;\'>🛡️</span>';">
         </div>
         <div class="top-text">
           <p class="eyebrow">Defesa Civil Estadual · SEDEC-RJ</p>
@@ -457,7 +463,7 @@
 
     <!-- Barra de Filtros: 1 Linha Horizontal no Desktop / Compacta sem Vão no Mobile -->
     <div class="filter-selectors">
-      <!-- Bloco 1: Regional / REDEC (Com largura fixa e elegante) -->
+      <!-- Bloco 1: Regional / REDEC -->
       <div class="selector-block block-redec">
         <span class="selector-label">Regional / REDEC</span>
         <select class="redec-select" id="redecFilterSelect"></select>
@@ -732,13 +738,13 @@ function atendeCenario(riscoStr, cenario) {
 
   if (cenario === "estiagem") {
     return isPlanoGeral || 
-           s.includes("estia") ||
-           s.includes("seca") ||
-           s.includes("fogo") ||
-           s.includes("incend") ||
-           s.includes("queimad") ||
-           s.includes("florest") ||
-           s.includes("deficit") ||
+           s.includes("estia") || 
+           s.includes("seca") || 
+           s.includes("fogo") || 
+           s.includes("incend") || 
+           s.includes("queimad") || 
+           s.includes("florest") || 
+           s.includes("deficit") || 
            s.includes("vegeta");
   }
 
@@ -896,6 +902,43 @@ function criarConteudoPopup(canonico) {
 
   const cenarioTexto = cenarioAtivo === "chuvas" ? "🌧️ Chuvas Intensas" : (cenarioAtivo === "estiagem" ? "🔥 Estiagem/Fogo" : "🌐 Geral");
 
+  // DETERMINAÇÃO E SÍNTESE DA ANÁLISE TÉCNICA (ATENDE, PARCIAL, NÃO ATENDE)
+  let tipoAvaliacao = cenarioAtivo === "estiagem" ? "estiagem" : "chuvas";
+  let qData = latestQualityData(canonico, tipoAvaliacao, anoAtivo);
+  if (!qData && cenarioAtivo === "geral") {
+    qData = latestQualityData(canonico, "estiagem", anoAtivo);
+    if (qData) tipoAvaliacao = "estiagem";
+  }
+
+  let qualityHtml = "";
+  if (qData && qData.criterios) {
+    let qTotal = 0, qOk = 0, qWarn = 0, qBad = 0;
+    const crits = getActiveCriteria(tipoAvaliacao, anoAtivo);
+    crits.forEach(c => {
+      const item = qData.criterios[c.id];
+      if (item && item.status) {
+        qTotal++;
+        if (item.status === "ok") qOk++;
+        else if (item.status === "warn") qWarn++;
+        else if (item.status === "bad") qBad++;
+      }
+    });
+
+    if (qTotal > 0) {
+      const rotuloAnalise = tipoAvaliacao === "estiagem" ? "Estiagem/Fogo" : "Chuvas";
+      qualityHtml = `
+        <div class="popup-quality-box">
+          <div class="popup-quality-title">Qualidade Técnica (${rotuloAnalise}):</div>
+          <div class="popup-quality-badges">
+            <span class="popup-qbadge ok">✓ ${qOk} atende</span>
+            <span class="popup-qbadge warn">! ${qWarn} parcial</span>
+            <span class="popup-qbadge bad">✕ ${qBad} não atende</span>
+          </div>
+        </div>
+      `;
+    }
+  }
+
   return `
     <div class="popup-nome">${canonico}</div>
     <div class="popup-redec">${redecNome} · Ciclo ${formatCicloLabel(anoAtivo)}</div>
@@ -903,6 +946,7 @@ function criarConteudoPopup(canonico) {
     <div class="popup-status ${st}">${STATUS_LABEL[st]}</div>
     <div class="popup-riscos">${riscosHtml}</div>
     ${obsHtml}
+    ${qualityHtml}
   `;
 }
 
