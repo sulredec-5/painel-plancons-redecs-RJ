@@ -30,6 +30,142 @@
   *{box-sizing:border-box;}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",sans-serif;-webkit-font-smoothing:antialiased;}
   a{color:var(--accent);}
+
+  /* MODAL DE LOGIN SOB DEMANDA (PARA ANÁLISES TÉCNICAS) */
+  #loginModalBackdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(22, 36, 63, 0.72);
+    backdrop-filter: blur(2px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+  }
+  #loginModalBackdrop.open {
+    display: flex;
+  }
+  .login-card {
+    background: var(--surface);
+    width: 100%;
+    max-width: 390px;
+    border-radius: 8px;
+    padding: 24px 22px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    border-top: 4px solid var(--accent);
+    position: relative;
+  }
+  .login-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: #F0F2F5;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .login-close-btn:hover {
+    color: var(--ink);
+    background: #E2E6EC;
+  }
+  .login-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-right: 24px;
+  }
+  .login-header img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+  .login-eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 2px;
+  }
+  .login-title {
+    font-family: "Source Serif 4", serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--ink);
+  }
+  .login-desc {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 14px;
+    line-height: 1.45;
+  }
+  .login-field {
+    margin-bottom: 12px;
+  }
+  .login-field label {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .login-field input {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1.5px solid var(--line);
+    border-radius: 5px;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+    outline: none;
+  }
+  .login-field input:focus {
+    border-color: var(--accent);
+  }
+  .login-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .15s;
+    margin-top: 4px;
+  }
+  .login-btn:hover:not(:disabled) {
+    background: var(--accent);
+  }
+  .login-btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+  }
+  .login-error {
+    display: none;
+    background: var(--red-bg);
+    color: var(--red);
+    border-left: 3px solid var(--red);
+    padding: 8px 10px;
+    font-size: 11.5px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
   
   /* HEADER */
   header.top{background:var(--ink);color:#fff;padding:16px 18px 14px;width:100%;}
@@ -51,6 +187,8 @@
   .btn-refresh{background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);color:#fff;border-radius:4px;padding:3px 9px;font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;}
   .btn-refresh:hover:not(:disabled){background:rgba(255,255,255,0.25);border-color:#fff;}
   .btn-refresh:disabled{opacity:0.6;cursor:wait;}
+  .btn-logout{display:none;background:rgba(31,122,77,0.35);border:1px solid #6EC49A;color:#E4F1EA;border-radius:4px;padding:3px 8px;font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;}
+  .btn-logout:hover{background:rgba(176,36,29,0.5);border-color:#E8807C;color:#fff;}
 
   /* CONTROLES / FILTROS */
   .filter-selectors{
@@ -137,6 +275,7 @@
     display:inline-flex;
     align-items:center;
     justify-content:center;
+    gap:4px;
     font-family:"IBM Plex Mono",monospace;
     font-size:11px;
     font-weight:600;
@@ -344,7 +483,6 @@
     .top-header-row{flex-direction:column;align-items:flex-start;gap:6px;}
     .sync-status-row{width:100%;justify-content:space-between;}
 
-    /* No celular: Layout em colunas sem vácuo */
     .filter-selectors{
       display:flex;
       flex-direction:column;
@@ -439,13 +577,40 @@
 </head>
 <body>
 
+<!-- MODAL DE AUTENTICAÇÃO SOB DEMANDA (APENAS PARA ANÁLISES TÉCNICAS) -->
+<div id="loginModalBackdrop">
+  <div class="login-card" role="dialog" aria-modal="true">
+    <button class="login-close-btn" id="loginModalClose" aria-label="Fechar">✕</button>
+    <div class="login-header">
+      <img src="logo.png?v=24" alt="Logo SEDEC RJ" onerror="this.style.display='none'">
+      <div>
+        <p class="login-eyebrow">Acesso Técnico Restrito</p>
+        <h2 class="login-title">Análise Qualitativa</h2>
+      </div>
+    </div>
+    <p class="login-desc">O panorama geral de entregas é público. Para acessar os pareceres técnicos e o comparativo entre versões, informe suas credenciais.</p>
+    <div id="loginError" class="login-error"></div>
+    <form id="loginForm">
+      <div class="login-field">
+        <label for="loginUser">Usuário</label>
+        <input type="text" id="loginUser" autocomplete="username" placeholder="Digite seu usuário" required>
+      </div>
+      <div class="login-field">
+        <label for="loginPass">Senha</label>
+        <input type="password" id="loginPass" autocomplete="current-password" placeholder="Digite sua senha" required>
+      </div>
+      <button type="submit" class="login-btn" id="loginSubmitBtn">Desbloquear Análises</button>
+    </form>
+  </div>
+</div>
+
 <header class="top">
   <div class="top-inner">
     <!-- Linha Superior do Cabeçalho: Marca + Status -->
     <div class="top-header-row">
       <div class="top-brand">
         <div class="top-logo-wrap">
-          <img class="top-logo" id="headerLogo" src="logo.png?v=22" alt="Logo SEDEC RJ" onerror="this.onerror=null;this.parentElement.innerHTML='<span style=\'font-size:26px;\'>🛡️</span>';">
+          <img class="top-logo" id="headerLogo" src="logo.png?v=24" alt="Logo SEDEC RJ" onerror="this.onerror=null;this.parentElement.innerHTML='<span style=\'font-size:26px;\'>🛡️</span>';">
         </div>
         <div class="top-text">
           <p class="eyebrow">Defesa Civil Estadual · SEDEC-RJ</p>
@@ -455,45 +620,44 @@
       <div class="sync-status-row">
         <p class="sub" id="syncSubline" style="margin:0;">Iniciando...</p>
         <button class="btn-refresh" id="btnForceRefresh" title="Varre as 11 REDECs e atualiza a base">🔄 Atualizar Base</button>
+        <button class="btn-logout" id="btnLogout" title="Bloquear análises técnicas">🔓 Sair</button>
       </div>
     </div>
     
     <div id="syncLoadingBar" class="sync-loading-bar"></div>
     <div id="pendingAnalysisAlert" style="display:none;margin-top:2px;font-size:11px;color:#FBEEDF;">⏳ <span id="pendingAnalysisText"></span></div>
 
-    <!-- Barra de Filtros: 1 Linha Horizontal no Desktop / Compacta sem Vão no Mobile -->
+    <!-- Barra de Filtros -->
     <div class="filter-selectors">
-      <!-- Bloco 1: Regional / REDEC -->
       <div class="selector-block block-redec">
         <span class="selector-label">Regional / REDEC</span>
         <select class="redec-select" id="redecFilterSelect"></select>
       </div>
 
-      <!-- Bloco 2: Tipologia / Cenário -->
       <div class="selector-block block-scenario">
         <span class="selector-label">Tipologia / Cenário</span>
         <div class="scenario-btns" id="scenarioBtns">
           <button class="scenario-btn active" data-scenario="geral" title="Considera qualquer plano cadastrado">🌐 Geral</button>
           <button class="scenario-btn" data-scenario="chuvas" title="Planos para chuvas e inundações">🌧️ Chuvas</button>
-          <button class="scenario-btn" data-scenario="estiagem" title="Planos para estiagem e queimadas">🔥 Estiagem/Fogo</button>
+          <button class="scenario-btn" data-scenario="estiagem" title="Planos para estiagem e queimadas">🔥 Estiagem</button>
         </div>
       </div>
 
-      <!-- Bloco 3: Ciclo de Referência -->
       <div class="selector-block block-cycle">
         <span class="selector-label">Ciclo de referência</span>
         <div class="year-btns" id="yearBtns"></div>
       </div>
 
-      <!-- Bloco 4: Qualidade Técnica -->
       <div class="selector-block block-quality">
         <span class="selector-label">Qualidade Técnica</span>
         <div class="quality-btn-group">
           <button class="quality-open-btn" id="qualityOpenBtn">
-            Ver análise
+            <span id="qualityLockIcon">🔒</span> Ver análise
             <span class="quality-open-meta" id="qualityOpenMeta"></span>
           </button>
-          <button class="compare-open-btn" id="compareOpenBtn">Comparar</button>
+          <button class="compare-open-btn" id="compareOpenBtn">
+            <span id="compareLockIcon">🔒</span> Comparar
+          </button>
         </div>
       </div>
     </div>
@@ -633,9 +797,14 @@
 <script src="mapa.js"></script>
 <script>
 /* ============================================================================
-   CONFIGURAÇÃO ESTADUAL E CONEXÃO
+   CONFIGURAÇÃO ESTADUAL, AUTENTICAÇÃO SELETIVA E CONEXÃO
    ============================================================================ */
 const API_URL = "https://script.google.com/macros/s/AKfycbxbhRXtgXvJ4tGn5XxkqrkzZ1v7N9yqyP6BkeBfjbnPuiAcCHJbJhR8xxuqFpVwLByc0A/exec";
+
+let AUTH_USER = sessionStorage.getItem("plancon_user") || "";
+let AUTH_PASS = sessionStorage.getItem("plancon_pass") || "";
+let IS_AUTHENTICATED = false;
+let PENDING_ACTION_AFTER_LOGIN = null; // "quality" ou "compare"
 
 let ALL_DATA = [];
 let DICIONARIO_GLOBAL = [];
@@ -716,7 +885,6 @@ function atualizarMunicipiosEscopo() {
   }
 }
 
-// TAXONOMIA OPERACIONAL COMPLETA (SEDEC / CENAD / COBRADE)
 function atendeCenario(riscoStr, cenario) {
   if (cenario === "geral") return true;
   const s = normalizarTexto(riscoStr);
@@ -902,40 +1070,42 @@ function criarConteudoPopup(canonico) {
 
   const cenarioTexto = cenarioAtivo === "chuvas" ? "🌧️ Chuvas Intensas" : (cenarioAtivo === "estiagem" ? "🔥 Estiagem/Fogo" : "🌐 Geral");
 
-  // DETERMINAÇÃO E SÍNTESE DA ANÁLISE TÉCNICA (ATENDE, PARCIAL, NÃO ATENDE)
-  let tipoAvaliacao = cenarioAtivo === "estiagem" ? "estiagem" : "chuvas";
-  let qData = latestQualityData(canonico, tipoAvaliacao, anoAtivo);
-  if (!qData && cenarioAtivo === "geral") {
-    qData = latestQualityData(canonico, "estiagem", anoAtivo);
-    if (qData) tipoAvaliacao = "estiagem";
-  }
-
+  // Só exibe a síntese qualitativa se o usuário estiver autenticado
   let qualityHtml = "";
-  if (qData && qData.criterios) {
-    let qTotal = 0, qOk = 0, qWarn = 0, qBad = 0;
-    const crits = getActiveCriteria(tipoAvaliacao, anoAtivo);
-    crits.forEach(c => {
-      const item = qData.criterios[c.id];
-      if (item && item.status) {
-        qTotal++;
-        if (item.status === "ok") qOk++;
-        else if (item.status === "warn") qWarn++;
-        else if (item.status === "bad") qBad++;
-      }
-    });
+  if (IS_AUTHENTICATED) {
+    let tipoAvaliacao = cenarioAtivo === "estiagem" ? "estiagem" : "chuvas";
+    let qData = latestQualityData(canonico, tipoAvaliacao, anoAtivo);
+    if (!qData && cenarioAtivo === "geral") {
+      qData = latestQualityData(canonico, "estiagem", anoAtivo);
+      if (qData) tipoAvaliacao = "estiagem";
+    }
 
-    if (qTotal > 0) {
-      const rotuloAnalise = tipoAvaliacao === "estiagem" ? "Estiagem/Fogo" : "Chuvas";
-      qualityHtml = `
-        <div class="popup-quality-box">
-          <div class="popup-quality-title">Qualidade Técnica (${rotuloAnalise}):</div>
-          <div class="popup-quality-badges">
-            <span class="popup-qbadge ok">✓ ${qOk} atende</span>
-            <span class="popup-qbadge warn">! ${qWarn} parcial</span>
-            <span class="popup-qbadge bad">✕ ${qBad} não atende</span>
+    if (qData && qData.criterios) {
+      let qTotal = 0, qOk = 0, qWarn = 0, qBad = 0;
+      const crits = getActiveCriteria(tipoAvaliacao, anoAtivo);
+      crits.forEach(c => {
+        const item = qData.criterios[c.id];
+        if (item && item.status) {
+          qTotal++;
+          if (item.status === "ok") qOk++;
+          else if (item.status === "warn") qWarn++;
+          else if (item.status === "bad") qBad++;
+        }
+      });
+
+      if (qTotal > 0) {
+        const rotuloAnalise = tipoAvaliacao === "estiagem" ? "Estiagem/Fogo" : "Chuvas";
+        qualityHtml = `
+          <div class="popup-quality-box">
+            <div class="popup-quality-title">Qualidade Técnica (${rotuloAnalise}):</div>
+            <div class="popup-quality-badges">
+              <span class="popup-qbadge ok">✓ ${qOk} atende</span>
+              <span class="popup-qbadge warn">! ${qWarn} parcial</span>
+              <span class="popup-qbadge bad">✕ ${qBad} não atende</span>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
     }
   }
 
@@ -1393,14 +1563,21 @@ function latestQualityData(municipio, tipo, ano){
 }
 
 function renderQualityMeta(){
+  const metaTop = document.getElementById("qualityOpenMeta");
+  const metaModal = document.getElementById("qualityMeta");
+
+  if (!IS_AUTHENTICATED) {
+    if (metaTop) metaTop.textContent = "(restrito)";
+    if (metaModal) metaModal.textContent = "";
+    return;
+  }
+
   const parts = Object.keys(RISK_TYPES).map(tipo=>{
     const analisados = MUNICIPIOS_ESCOPO.filter(m=>latestQualityData(m, tipo)).length;
     return `${analisados}/${MUNICIPIOS_ESCOPO.length} ${RISK_TYPES[tipo].shortLabel.toLowerCase()}`;
   });
   const metaTexto = parts.join(" · ");
-  const metaTop = document.getElementById("qualityOpenMeta");
   if(metaTop) metaTop.textContent = metaTexto ? `(${metaTexto})` : "";
-  const metaModal = document.getElementById("qualityMeta");
   if(metaModal) metaModal.textContent = metaTexto ? `${metaTexto} analisados no ciclo` : "";
 }
 
@@ -1495,11 +1672,21 @@ function setQualityTipo(tipo){
   closeDrilldown();
 }
 
-document.getElementById("qualityOpenBtn").addEventListener("click", ()=>{
+function abrirModalQualidade() {
   document.getElementById("qualityModalBackdrop").classList.add("open");
   setQualityTipo(riskTipoAtivoQuality);
   renderQualityMeta();
+}
+
+document.getElementById("qualityOpenBtn").addEventListener("click", ()=>{
+  if (!IS_AUTHENTICATED) {
+    PENDING_ACTION_AFTER_LOGIN = "quality";
+    abrirModalLogin();
+    return;
+  }
+  abrirModalQualidade();
 });
+
 document.getElementById("qualityModalClose").addEventListener("click", ()=>{
   document.getElementById("qualityModalBackdrop").classList.remove("open");
   closeDrilldown();
@@ -1658,14 +1845,139 @@ function closeCompareModal(){
   document.getElementById("compareModalBackdrop").classList.remove("open");
 }
 
-document.getElementById("compareOpenBtn").addEventListener("click", ()=>openCompareModal(null));
+document.getElementById("compareOpenBtn").addEventListener("click", ()=>{
+  if (!IS_AUTHENTICATED) {
+    PENDING_ACTION_AFTER_LOGIN = "compare";
+    abrirModalLogin();
+    return;
+  }
+  openCompareModal(null);
+});
 document.getElementById("compareModalClose").addEventListener("click", closeCompareModal);
 document.getElementById("compareMunicipio").addEventListener("change", ()=>populateCompareSelectors(document.getElementById("compareMunicipio").value, riskTipoAtivoCompare));
 document.getElementById("compareBefore").addEventListener("change", ()=>renderCompareDetail(riskTipoAtivoCompare));
 document.getElementById("compareAfter").addEventListener("change", ()=>renderCompareDetail(riskTipoAtivoCompare));
 
 /* ============================================================================
-   SINCRONIZAÇÃO E BOTÃO DE FORÇAR ATUALIZAÇÃO
+   CONTROLE DE AUTENTICAÇÃO SOB DEMANDA (SÓ PARA ANÁLISES TÉCNICAS)
+   ============================================================================ */
+function atualizarVisualAutenticacao() {
+  const lockQ = document.getElementById("qualityLockIcon");
+  const lockC = document.getElementById("compareLockIcon");
+  const btnLogout = document.getElementById("btnLogout");
+
+  if (IS_AUTHENTICATED) {
+    if (lockQ) lockQ.style.display = "none";
+    if (lockC) lockC.style.display = "none";
+    if (btnLogout) btnLogout.style.display = "inline-block";
+  } else {
+    if (lockQ) lockQ.style.display = "inline";
+    if (lockC) lockC.style.display = "inline";
+    if (btnLogout) btnLogout.style.display = "none";
+  }
+  renderQualityMeta();
+}
+
+function abrirModalLogin() {
+  document.getElementById("loginError").style.display = "none";
+  document.getElementById("loginModalBackdrop").classList.add("open");
+  setTimeout(() => document.getElementById("loginUser").focus(), 100);
+}
+
+function fecharModalLogin() {
+  document.getElementById("loginModalBackdrop").classList.remove("open");
+  PENDING_ACTION_AFTER_LOGIN = null;
+}
+
+document.getElementById("loginModalClose").addEventListener("click", fecharModalLogin);
+
+document.getElementById("btnLogout").addEventListener("click", () => {
+  sessionStorage.removeItem("plancon_user");
+  sessionStorage.removeItem("plancon_pass");
+  AUTH_USER = "";
+  AUTH_PASS = "";
+  IS_AUTHENTICATED = false;
+  DICIONARIO_GLOBAL = [];
+  Object.keys(RISK_TYPES).forEach(t => RISK_TYPES[t].history = {});
+  atualizarVisualAutenticacao();
+  if (mapInstance) mapInstance.closePopup();
+});
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const u = document.getElementById("loginUser").value.trim();
+  const p = document.getElementById("loginPass").value.trim();
+  if (!u || !p) return;
+
+  const loginBtn = document.getElementById("loginSubmitBtn");
+  const errEl = document.getElementById("loginError");
+  errEl.style.display = "none";
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Validando...";
+
+  try {
+    const queryParams = new URLSearchParams({
+      user: u,
+      pass: p,
+      action: "login"
+    });
+    const response = await fetch(`${API_URL}?${queryParams.toString()}`);
+    if (!response.ok) throw new Error("Erro HTTP");
+    const dados = await response.json();
+
+    if (dados && dados.error === "UNAUTHORIZED") {
+      errEl.textContent = dados.message || "Usuário ou senha inválidos.";
+      errEl.style.display = "block";
+      return;
+    }
+
+    // Sucesso! Salva credenciais e carrega os dados técnicos
+    AUTH_USER = u;
+    AUTH_PASS = p;
+    IS_AUTHENTICATED = true;
+    sessionStorage.setItem("plancon_user", u);
+    sessionStorage.setItem("plancon_pass", p);
+
+    processarDadosTecnicos(dados);
+    atualizarVisualAutenticacao();
+
+    const acaoPendente = PENDING_ACTION_AFTER_LOGIN;
+    fecharModalLogin();
+
+    if (acaoPendente === "quality") {
+      abrirModalQualidade();
+    } else if (acaoPendente === "compare") {
+      openCompareModal(null);
+    }
+
+  } catch (err) {
+    errEl.textContent = "Erro de conexão com o servidor. Tente novamente.";
+    errEl.style.display = "block";
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Desbloquear Análises";
+  }
+});
+
+function processarDadosTecnicos(dados) {
+  DICIONARIO_GLOBAL = (dados && Array.isArray(dados.dicionario)) ? dados.dicionario : [];
+  Object.keys(RISK_TYPES).forEach(tipo => {
+    const cfg = RISK_TYPES[tipo];
+    cfg.history = {};
+    Object.keys(MAPA_REDECS_RJ).forEach(m => cfg.history[m] = []);
+    const lista = (dados && dados[cfg.dataKey]) || [];
+    lista.forEach(a => {
+      const mun = getNomeCanonicoMunicipio(a.municipio);
+      if (cfg.history[mun]) cfg.history[mun].push({ ...a, municipio: mun });
+    });
+    Object.keys(MAPA_REDECS_RJ).forEach(m => {
+      cfg.history[m].sort((x, y) => new Date(x.dataAnalise) - new Date(y.dataAnalise));
+    });
+  });
+}
+
+/* ============================================================================
+   SINCRONIZAÇÃO COM A PLANILHA (ABERTA + DADOS TÉCNICOS SE AUTENTICADO)
    ============================================================================ */
 async function carregarDadosDaPlanilha(forcarRecache = false) {
   const syncSubline = document.getElementById("syncSubline");
@@ -1684,14 +1996,31 @@ async function carregarDadosDaPlanilha(forcarRecache = false) {
   }, 1000);
 
   try {
-    const urlFinal = forcarRecache ? (API_URL + "?recache=1") : API_URL;
+    const queryParams = new URLSearchParams();
+    if (AUTH_USER && AUTH_PASS) {
+      queryParams.append("user", AUTH_USER);
+      queryParams.append("pass", AUTH_PASS);
+    }
+    if (forcarRecache) queryParams.append("recache", "1");
+
+    const qs = queryParams.toString();
+    const urlFinal = qs ? `${API_URL}?${qs}` : API_URL;
     const response = await fetch(urlFinal);
     if(!response.ok) throw new Error("Status HTTP: " + response.status);
     
     const dados = await response.json();
     clearInterval(timer);
 
-    DICIONARIO_GLOBAL = (dados && Array.isArray(dados.dicionario)) ? dados.dicionario : [];
+    // Se havia sessão salva mas a senha foi revogada na planilha, limpa a sessão
+    if (dados && dados.restrito === true) {
+      IS_AUTHENTICATED = false;
+      sessionStorage.removeItem("plancon_user");
+      sessionStorage.removeItem("plancon_pass");
+      AUTH_USER = "";
+      AUTH_PASS = "";
+    } else if (AUTH_USER && AUTH_PASS && dados && dados.restrito === false) {
+      IS_AUTHENTICATED = true;
+    }
 
     const rawEntregas = (dados && Array.isArray(dados.entregas)) ? dados.entregas : [];
     ALL_DATA = rawEntregas.map(d => {
@@ -1705,19 +2034,9 @@ async function carregarDadosDaPlanilha(forcarRecache = false) {
       };
     });
 
-    Object.keys(RISK_TYPES).forEach(tipo=>{
-      const cfg = RISK_TYPES[tipo];
-      cfg.history = {};
-      Object.keys(MAPA_REDECS_RJ).forEach(m => cfg.history[m] = []);
-      const lista = (dados && dados[cfg.dataKey]) || [];
-      lista.forEach(a => {
-        const mun = getNomeCanonicoMunicipio(a.municipio);
-        if(cfg.history[mun]) cfg.history[mun].push({ ...a, municipio: mun });
-      });
-      Object.keys(MAPA_REDECS_RJ).forEach(m => {
-        cfg.history[m].sort((x, y) => new Date(x.dataAnalise) - new Date(y.dataAnalise));
-      });
-    });
+    if (IS_AUTHENTICATED) {
+      processarDadosTecnicos(dados);
+    }
 
     redecAtiva = "ALL";
     cenarioAtivo = "geral";
@@ -1728,7 +2047,7 @@ async function carregarDadosDaPlanilha(forcarRecache = false) {
     initMap(); 
     setAno(anoAtivo);
     buildYearBtns();
-    renderQualityMeta();
+    atualizarVisualAutenticacao();
 
     if(loadingBar) loadingBar.style.display = "none";
     const hora = new Date().toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"});
@@ -1750,6 +2069,7 @@ async function carregarDadosDaPlanilha(forcarRecache = false) {
     initMap(); 
     setAno(anoAtivo);
     buildYearBtns();
+    atualizarVisualAutenticacao();
   } finally {
     if (btnRefresh) btnRefresh.disabled = false;
   }
@@ -1777,7 +2097,7 @@ function handleScreenResize() {
 window.addEventListener("resize", handleScreenResize);
 window.addEventListener("orientationchange", handleScreenResize);
 
-// Inicialização rápida
+// Carrega imediatamente o panorama público (e destrava se já houver sessão ativa)
 carregarDadosDaPlanilha(false);
 </script>
 
